@@ -8,6 +8,7 @@ import {
   EMAIL_ADDRESS,
   EMAIL_ATTENDEE,
   EMAIL_HOST,
+  WEBHOOK,
   WHATSAPP_ATTENDEE,
   WHATSAPP_NUMBER,
   SMS_NUMBER,
@@ -19,6 +20,7 @@ import {
   UpdatePhoneNumberWorkflowStepDto,
   UpdatePhoneWhatsAppNumberWorkflowStepDto,
   UpdateWhatsAppAttendeePhoneWorkflowStepDto,
+  UpdateWebhookWorkflowStepDto,
   STEP_ACTIONS,
 } from "./workflow-step.input";
 import {
@@ -70,6 +72,7 @@ import {
   UpdatePhoneWhatsAppNumberWorkflowStepDto,
   UpdateWhatsAppAttendeePhoneWorkflowStepDto,
   UpdatePhoneNumberWorkflowStepDto,
+  UpdateWebhookWorkflowStepDto,
   EventTypeWorkflowTriggerDto,
   WorkflowActivationDto
 )
@@ -151,6 +154,7 @@ export class UpdateEventTypeWorkflowDto {
       { $ref: getSchemaPath(UpdatePhoneWhatsAppNumberWorkflowStepDto) },
       { $ref: getSchemaPath(UpdateWhatsAppAttendeePhoneWorkflowStepDto) },
       { $ref: getSchemaPath(UpdatePhoneNumberWorkflowStepDto) },
+      { $ref: getSchemaPath(UpdateWebhookWorkflowStepDto) },
     ],
     type: "array",
   })
@@ -171,6 +175,7 @@ export class UpdateEventTypeWorkflowDto {
         { value: UpdatePhoneWhatsAppNumberWorkflowStepDto, name: WHATSAPP_NUMBER },
         { value: UpdatePhoneNumberWorkflowStepDto, name: SMS_NUMBER },
         { value: UpdatePhoneAttendeeWorkflowStepDto, name: SMS_ATTENDEE },
+        { value: UpdateWebhookWorkflowStepDto, name: WEBHOOK },
       ],
     },
   })
@@ -182,5 +187,6 @@ export class UpdateEventTypeWorkflowDto {
     | UpdatePhoneWhatsAppNumberWorkflowStepDto
     | UpdateWhatsAppAttendeePhoneWorkflowStepDto
     | UpdatePhoneNumberWorkflowStepDto
+    | UpdateWebhookWorkflowStepDto
   )[];
 }

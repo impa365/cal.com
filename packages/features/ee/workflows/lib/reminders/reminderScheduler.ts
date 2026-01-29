@@ -6,6 +6,7 @@ import {
   isSMSOrWhatsappAction,
   isWhatsappAction,
   isCalAIAction,
+  isWebhookAction,
 } from "@calcom/features/ee/workflows/lib/actionHelperFunctions";
 import { isEmailAction } from "@calcom/features/ee/workflows/lib/actionHelperFunctions";
 import { EmailWorkflowService } from "@calcom/features/ee/workflows/lib/service/EmailWorkflowService";
@@ -200,6 +201,28 @@ const processWorkflowStep = async (
       verifiedAt: step.verifiedAt,
       routedEventTypeId: formData ? formData.routedEventTypeId : null,
       ...contextData,
+    });
+  } else if (isWebhookAction(step.action)) {
+    if (!evt) {
+      // Webhook action requires event data
+      return;
+    }
+
+    const { scheduleWebhookReminder } = await import("./webhookReminderManager");
+    await scheduleWebhookReminder({
+      evt,
+      triggerEvent: workflow.trigger,
+      action: "WEBHOOK",
+      timeSpan: {
+        time: workflow.time,
+        timeUnit: workflow.timeUnit,
+      },
+      webhookUrl: step.sendTo || "",
+      message: step.reminderBody || undefined,
+      workflowStepId: step.id,
+      seatReferenceUid,
+      userId: workflow.userId,
+      teamId: workflow.teamId,
     });
   }
 };

@@ -18,6 +18,7 @@ import {
   isCalAIAction,
   isFormTrigger,
   hasCalAIAction,
+  isWebhookAction,
 } from "@calcom/features/ee/workflows/lib/actionHelperFunctions";
 import { DYNAMIC_TEXT_VARIABLES } from "@calcom/features/ee/workflows/lib/constants";
 import {
@@ -327,6 +328,10 @@ export default function WorkflowStepContainer(props: WorkflowStepProps) {
       step?.action === WorkflowActions.EMAIL_ADDRESS
       ? true
       : false
+  );
+
+  const [isWebhookUrlNeeded, setIsWebhookUrlNeeded] = useState(
+    step?.action === WorkflowActions.WEBHOOK ? true : false
   );
 
   const trigger = useWatch({
@@ -877,6 +882,7 @@ export default function WorkflowStepContainer(props: WorkflowStepProps) {
                           }
 
                           setIsEmailSubjectNeeded(false);
+                          setIsWebhookUrlNeeded(false);
                           form.setValue(
                             `steps.${step.stepNumber - 1}.agentId`,
                             null
@@ -895,6 +901,7 @@ export default function WorkflowStepContainer(props: WorkflowStepProps) {
                           }
 
                           setIsEmailSubjectNeeded(false);
+                          setIsWebhookUrlNeeded(false);
                           form.setValue(
                             `steps.${step.stepNumber - 1}.agentId`,
                             null
@@ -904,6 +911,7 @@ export default function WorkflowStepContainer(props: WorkflowStepProps) {
                           setIsSenderIsNeeded(false);
                           setIsEmailAddressNeeded(false);
                           setIsEmailSubjectNeeded(false);
+                          setIsWebhookUrlNeeded(false);
                           form.setValue(
                             `steps.${step.stepNumber - 1}.emailSubject`,
                             null
@@ -916,6 +924,20 @@ export default function WorkflowStepContainer(props: WorkflowStepProps) {
                             `steps.${step.stepNumber - 1}.sender`,
                             null
                           );
+                        } else if (isWebhookAction(val.value)) {
+                          setIsPhoneNumberNeeded(false);
+                          setIsSenderIsNeeded(false);
+                          setIsEmailAddressNeeded(false);
+                          setIsEmailSubjectNeeded(false);
+                          setIsWebhookUrlNeeded(true);
+                          form.setValue(
+                            `steps.${step.stepNumber - 1}.emailSubject`,
+                            null
+                          );
+                          form.setValue(
+                            `steps.${step.stepNumber - 1}.agentId`,
+                            null
+                          );
                         } else {
                           setIsPhoneNumberNeeded(false);
                           setIsSenderIsNeeded(false);
@@ -923,6 +945,7 @@ export default function WorkflowStepContainer(props: WorkflowStepProps) {
                             val.value === WorkflowActions.EMAIL_ADDRESS
                           );
                           setIsEmailSubjectNeeded(true);
+                          setIsWebhookUrlNeeded(false);
                           form.setValue(
                             `steps.${step.stepNumber - 1}.agentId`,
                             null
@@ -1470,9 +1493,68 @@ export default function WorkflowStepContainer(props: WorkflowStepProps) {
                 )}
               </div>
             )}
+          {isWebhookUrlNeeded && (
+            <div className="bg-cal-muted border-muted mt-5 rounded-2xl border p-4">
+              <Label>{t("webhook_url")}</Label>
+              <Controller
+                name={`steps.${step.stepNumber - 1}.sendTo`}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    required
+                    containerClassName="w-full"
+                    className="h-8 min-w-fit"
+                    placeholder="https://example.com/webhook"
+                    value={value || ""}
+                    disabled={props.readOnly}
+                    onChange={(e) => onChange(e.target.value)}
+                  />
+                )}
+              />
+              {form.formState.errors.steps &&
+                form.formState?.errors?.steps[step.stepNumber - 1]?.sendTo && (
+                  <p className="text-error mt-1 text-xs">
+                    {form.formState?.errors?.steps[step.stepNumber - 1]?.sendTo
+                      ?.message || ""}
+                  </p>
+                )}
+              <p className="text-subtle mt-2 text-xs">
+                {t("webhook_payload_help")}
+              </p>
+              <div className="mt-4">
+                <div className="flex items-center justify-between">
+                  <Label>{t("webhook_payload")}</Label>
+                  {!props.readOnly && !isFormTrigger(trigger) && (
+                    <AddVariablesDropdown
+                      addVariable={(variable: string) => {
+                        const currentValue =
+                          form.getValues(
+                            `steps.${step.stepNumber - 1}.reminderBody`
+                          ) || "";
+                        form.setValue(
+                          `steps.${step.stepNumber - 1}.reminderBody`,
+                          currentValue + `{${variable.toUpperCase()}}`
+                        );
+                      }}
+                      variables={DYNAMIC_TEXT_VARIABLES}
+                    />
+                  )}
+                </div>
+                <TextArea
+                  rows={6}
+                  disabled={props.readOnly}
+                  className="my-0 font-mono text-sm focus:ring-transparent"
+                  placeholder='{"event": "{EVENT_NAME}", "attendee": "{ATTENDEE_NAME}"}'
+                  {...form.register(`steps.${step.stepNumber - 1}.reminderBody`)}
+                />
+              </div>
+            </div>
+          )}
           {!isCalAIAction(
             form.getValues(`steps.${step.stepNumber - 1}.action`)
-          ) && (
+          ) &&
+            !isWebhookAction(
+              form.getValues(`steps.${step.stepNumber - 1}.action`)
+            ) && (
             <div className="mt-3">
               <Label>{t("message_template")}</Label>
               <Controller
@@ -1569,7 +1651,10 @@ export default function WorkflowStepContainer(props: WorkflowStepProps) {
           )}
           {!isCalAIAction(
             form.getValues(`steps.${step.stepNumber - 1}.action`)
-          ) && (
+          ) &&
+            !isWebhookAction(
+              form.getValues(`steps.${step.stepNumber - 1}.action`)
+            ) && (
             <div className="bg-cal-muted border-muted mt-3 rounded-2xl border py-1 px-3">
               {isEmailSubjectNeeded && (
                 <div className="mb-6">

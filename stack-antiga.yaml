@@ -1,0 +1,179 @@
+version: "3.7"
+services:
+## --------------------------- ORION --------------------------- ##
+  calcom:
+    image: calcom/cal.com:v5.5.11
+    networks:
+      - serverBlack
+    environment:
+    ## Licenças
+      - NEXT_PUBLIC_LICENSE_CONSENT=agree
+      - LICENSE=agree
+      - CALCOM_LICENSE_KEY=59c0bed7-8b21-4280-8514-e022fbfc24c7
+      - CAL_SIGNATURE_TOKEN=0cc0e6c35519bba620c9360cfe3e68d0
+      - NEXT_PUBLIC_IS_E2E=1
+
+    ## White Labeling
+      - NEXT_PUBLIC_APP_NAME="blackatende"
+      - NEXT_PUBLIC_SUPPORT_MAIL_ADDRESS="contato@blackatende.com"
+      - NEXT_PUBLIC_COMPANY_NAME="Black Atende"
+      - NEXT_PUBLIC_DISABLE_SIGNUP=true
+      
+    ## URLs
+      - NEXT_PUBLIC_WEBAPP_URL=https://calcom.blackatende.com
+      - BASE_URL=https://calcom.blackatende.com
+      - NEXTAUTH_URL=https://calcom.blackatende.com
+      - NEXT_PUBLIC_CONSOLE_URL=https://calcom.blackatende.com
+      - NEXT_PUBLIC_APP_URL=https://calcom.blackatende.com
+      - NEXT_PUBLIC_WEBSITE_URL=https://calcom.blackatende.com
+      - WEB_APP=https://calcom.blackatende.com
+      - NEXT_PUBLIC_EMBED_LIB_URL=https://calcom.blackatende.com/embed/embed.js
+      - ALLOWED_HOSTNAMES=["calcom.blackatende.com","calcom.blackatende.com"]
+    ## API Backend
+      - ENABLE_BACKEND_API=true
+      - CRON_API_KEY=0cc0e6c35519bba620c9360cfe3e68d0
+      - NEXT_PUBLIC_API_URL=https://apicalcom.blackatende.com/api
+      - NEXT_PUBLIC_API_V2_URL=https://apicalcom.blackatende.com/api/v2
+    ## Encrypition
+      - NEXTAUTH_SECRET=05a28ffe12f7e667ae917657c1f4b3d2 
+      - CALENDSO_ENCRYPTION_KEY=05a28ffe12f7e667ae917657c1f4b3d2
+      - SIGNATURE_TOKEN=05a28ffe12f7e667ae917657c1f4b3d2
+    ## Dados Postgress
+      - DATABASE_URL=postgresql://postgres:9fde2adf6afa91374a4ade58b3ee4d71@postgres:5432/calcom
+      - DATABASE_DIRECT_URL=postgresql://postgres:9fde2adf6afa91374a4ade58b3ee4d71@postgres:5432/calcom
+    ## Configurações de Email e SMTP
+      - EMAIL_FROM=noreply2@impa365.com
+      - EMAIL_FROM_NAME=BlackAtende
+      - EMAIL_SERVER_HOST=smtp.hostinger.com
+      - EMAIL_SERVER_PORT=587
+      - EMAIL_SERVER_USER=noreply2@impa365.com
+      - EMAIL_SERVER_PASSWORD=Senha@blackatende1
+    ## Nodes
+      - NODE_ENV=production
+    ## Redis
+      - REDIS_URL=redis://redis:6379
+    ## Telemetria
+      - CALCOM_TELEMETRY_DISABLED=1
+    ## VAPID Keys
+      - NEXT_PUBLIC_VAPID_PUBLIC_KEY=BPtkLZAQ0gZn-QB9Zb8UKj-3iFlyZo-IPLzjeyOslNA79hkJgKgtIZHraoZuHEtcxPJB4_znHNMzHpGLZRPMDwE
+      - VAPID_PRIVATE_KEY=qo_T_fevj9bMMUyUsuKe1RfIjIzGNqGQZSPZv0zX6vc
+      - JWT_SECRET=05a28ffe12f7e667ae917657c1f4b3d2
+    ## Integração com Google (Calendario & Meet)
+      #-GOOGLE_LOGIN_ENABLED=false
+      #-GOOGLE_API_CREDENTIALS=
+    ## Integração com Microsoft 365
+      #- MS_GRAPH_CLIENT_ID=
+      #- MS_GRAPH_CLIENT_SECRET=
+    ## Integração com Zoom
+      #- ZOOM_CLIENT_ID=
+      #- ZOOM_CLIENT_SECRET=
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.calcom_app.rule=Host(`calcom.blackatende.com`)
+        - traefik.http.routers.calcom_app.entrypoints=websecure
+        - traefik.http.routers.calcom_app.priority=1
+        - traefik.http.routers.calcom_app.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.calcom_app.service=calcom_app
+        - traefik.http.services.calcom_app.loadbalancer.server.port=3000
+        - traefik.http.services.calcom_app.loadbalancer.passHostHeader=true
+
+## --------------------------- API V2 --------------------------- ##
+  calcom-api-v2:
+    image: impa365/calcom-apiv2:latest
+    networks:
+      - serverBlack
+    environment:
+    ## Licenças
+      - NEXT_PUBLIC_LICENSE_CONSENT=agree
+      - LICENSE=agree
+      - CALCOM_LICENSE_KEY=59c0bed7-8b21-4280-8514-e022fbfc24c7
+      - CAL_SIGNATURE_TOKEN=0cc0e6c35519bba620c9360cfe3e68d0
+      - NEXT_PUBLIC_IS_E2E=1
+    ## URLs
+      - NEXT_PUBLIC_WEBAPP_URL=https://calcom.blackatende.com
+      - BASE_URL=https://calcom.blackatende.com
+      - NEXTAUTH_URL=https://calcom.blackatende.com
+      - NEXT_PUBLIC_CONSOLE_URL=https://calcom.blackatende.com
+      - NEXT_PUBLIC_APP_URL=https://calcom.blackatende.com
+      - NEXT_PUBLIC_WEBSITE_URL=https://calcom.blackatende.com
+      - WEB_APP=https://calcom.blackatende.com
+      - NEXT_PUBLIC_EMBED_LIB_URL=https://calcom.blackatende.com/embed/embed.js
+      - ALLOWED_HOSTNAMES=["calcom.blackatende.com","calcom.blackatende.com"]
+    ## API Backend
+      - ENABLE_BACKEND_API=true
+      - CRON_API_KEY=0cc0e6c35519bba620c9360cfe3e68d0
+      - NEXT_PUBLIC_API_URL=https://apicalcom.blackatende.com/api
+      - NEXT_PUBLIC_API_V2_URL=https://apicalcom.blackatende.com/api/v2
+      - NEXT_PUBLIC_API_V2_ROOT_URL=https://apicalcom.blackatende.com/api/v2
+    ## Encrypition
+      - NEXTAUTH_SECRET=05a28ffe12f7e667ae917657c1f4b3d2 
+      - CALENDSO_ENCRYPTION_KEY=05a28ffe12f7e667ae917657c1f4b3d2
+      - SIGNATURE_TOKEN=05a28ffe12f7e667ae917657c1f4b3d2
+    ## Dados Postgress
+      - DATABASE_URL=postgresql://postgres:9fde2adf6afa91374a4ade58b3ee4d71@postgres:5432/calcom
+      - DATABASE_DIRECT_URL=postgresql://postgres:9fde2adf6afa91374a4ade58b3ee4d71@postgres:5432/calcom
+      - DATABASE_READ_URL=postgresql://postgres:9fde2adf6afa91374a4ade58b3ee4d71@postgres:5432/calcom
+      - DATABASE_WRITE_URL=postgresql://postgres:9fde2adf6afa91374a4ade58b3ee4d71@postgres:5432/calcom
+    ## Configurações de Email e SMTP
+      - EMAIL_FROM=noreply2@impa365.com
+      - EMAIL_FROM_NAME=BlackAtende
+      - EMAIL_SERVER_HOST=smtp.hostinger.com
+      - EMAIL_SERVER_PORT=587
+      - EMAIL_SERVER_USER=noreply2@impa365.com
+      - EMAIL_SERVER_PASSWORD=Senha@blackatende1
+    ## Nodes
+      - NODE_ENV=production
+    ## Redis
+      - REDIS_URL=redis://redis:6379
+    ## Telemetria
+      - CALCOM_TELEMETRY_DISABLED=1
+    ## VAPID Keys
+      - NEXT_PUBLIC_VAPID_PUBLIC_KEY=BPtkLZAQ0gZn-QB9Zb8UKj-3iFlyZo-IPLzjeyOslNA79hkJgKgtIZHraoZuHEtcxPJB4_znHNMzHpGLZRPMDwE
+      - VAPID_PRIVATE_KEY=qo_T_fevj9bMMUyUsuKe1RfIjIzGNqGQZSPZv0zX6vc
+      - JWT_SECRET=05a28ffe12f7e667ae917657c1f4b3d2
+    ## Stripe Billing
+      #- STRIPE_PRICE_ID_STARTER=price_abc123starter
+      #- STRIPE_PRICE_ID_STARTER_OVERAGE=price_abc123starteroverage
+      #- STRIPE_PRICE_ID_ESSENTIALS=price_abc123essentials
+      #- STRIPE_PRICE_ID_ESSENTIALS_OVERAGE=price_abc123essentialsoverage
+      #- STRIPE_PRICE_ID_ENTERPRISE=price_abc123enterprise
+      #- STRIPE_PRICE_ID_ENTERPRISE_OVERAGE=price_abc123enterpriseoverage
+      #- STRIPE_API_KEY=sk_test_sua_chave_de_api_stripe
+      #- STRIPE_WEBHOOK_SECRET=whsec_sua_chave_webhook
+    ## Integração com Google (Calendario & Meet)
+      #-GOOGLE_LOGIN_ENABLED=false
+      #-GOOGLE_API_CREDENTIALS=
+    ## Integração com Microsoft 365
+      #- MS_GRAPH_CLIENT_ID=
+      #- MS_GRAPH_CLIENT_SECRET=
+    ## Integração com Zoom
+      #- ZOOM_CLIENT_ID=
+      #- ZOOM_CLIENT_SECRET=
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.calcom_api.rule=Host(`apicalcom.blackatende.com`)
+        - traefik.http.routers.calcom_api.entrypoints=websecure
+        - traefik.http.routers.calcom_api.priority=10
+        - traefik.http.routers.calcom_api.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.calcom_api.service=calcom_api
+        - traefik.http.services.calcom_api.loadbalancer.server.port=5555
+        - traefik.http.services.calcom_api.loadbalancer.passHostHeader=true
+
+## --------------------------- ORION --------------------------- ##
+networks:
+  serverBlack:
+    name: serverBlack
+    external: true
+

@@ -26,6 +26,7 @@ export const WORKFLOW_ACTIONS = [
   WorkflowActions.WHATSAPP_ATTENDEE,
   WorkflowActions.WHATSAPP_NUMBER,
   WorkflowActions.CAL_AI_PHONE_CALL,
+  WorkflowActions.WEBHOOK,
 ] as const;
 
 export const TIME_UNIT = [TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MINUTE] as const;

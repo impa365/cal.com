@@ -12,6 +12,7 @@ export const SMS_NUMBER = "sms_number";
 export const WHATSAPP_ATTENDEE = "whatsapp_attendee";
 export const WHATSAPP_NUMBER = "whatsapp_number";
 export const CAL_AI_PHONE_CALL = "cal_ai_phone_call";
+export const WEBHOOK = "webhook";
 
 export const STEP_ACTIONS = [
   EMAIL_HOST,
@@ -22,6 +23,7 @@ export const STEP_ACTIONS = [
   WHATSAPP_ATTENDEE,
   WHATSAPP_NUMBER,
   CAL_AI_PHONE_CALL,
+  WEBHOOK,
 ] as const;
 
 export const FORM_ALLOWED_STEP_ACTIONS = [EMAIL_ATTENDEE, EMAIL_ADDRESS, SMS_ATTENDEE, SMS_NUMBER] as const;
@@ -35,6 +37,7 @@ export const STEP_ACTIONS_TO_ENUM = {
   [WHATSAPP_NUMBER]: WorkflowActions.WHATSAPP_NUMBER,
   [SMS_NUMBER]: WorkflowActions.SMS_NUMBER,
   [CAL_AI_PHONE_CALL]: WorkflowActions.CAL_AI_PHONE_CALL,
+  [WEBHOOK]: WorkflowActions.WEBHOOK,
 } as const;
 
 export const ENUM_TO_STEP_ACTIONS = {
@@ -46,6 +49,7 @@ export const ENUM_TO_STEP_ACTIONS = {
   [WorkflowActions.WHATSAPP_NUMBER]: WHATSAPP_NUMBER,
   [WorkflowActions.SMS_NUMBER]: SMS_NUMBER,
   [WorkflowActions.CAL_AI_PHONE_CALL]: CAL_AI_PHONE_CALL,
+  [WorkflowActions.WEBHOOK]: WEBHOOK,
 } as const;
 
 export type StepAction = (typeof STEP_ACTIONS)[number];
@@ -338,7 +342,8 @@ export type UpdateWorkflowStepDto =
   | UpdateWhatsAppAttendeePhoneWorkflowStepDto
   | UpdatePhoneWhatsAppNumberWorkflowStepDto
   | UpdatePhoneAttendeeWorkflowStepDto
-  | UpdatePhoneNumberWorkflowStepDto;
+  | UpdatePhoneNumberWorkflowStepDto
+  | UpdateWebhookWorkflowStepDto;
 export class UpdateEmailAttendeeWorkflowStepDto extends WorkflowEmailAttendeeStepDto {
   @ApiProperty({
     description:
@@ -397,6 +402,78 @@ export class UpdatePhoneNumberWorkflowStepDto extends WorkflowPhoneNumberStepDto
   id?: number;
 }
 export class UpdateWhatsAppAttendeePhoneWorkflowStepDto extends WorkflowPhoneWhatsAppAttendeeStepDto {
+  @ApiProperty({
+    description:
+      "Unique identifier of the step you want to update, if adding a new step do not provide this id",
+    example: 67244,
+  })
+  @IsNumber()
+  id?: number;
+}
+
+// Webhook Step DTOs
+export class WebhookMessageDto {
+  @ApiPropertyOptional({
+    description: "Custom JSON payload template with variables like {EVENT_NAME}, {ATTENDEE_EMAIL}",
+    example: '{"event": "{EVENT_NAME}", "attendee": "{ATTENDEE_EMAIL}"}',
+  })
+  @IsString()
+  @IsOptional()
+  payload?: string;
+
+  @ApiPropertyOptional({
+    description: "Custom headers in JSON format",
+    example: '{"Authorization": "Bearer token"}',
+  })
+  @IsString()
+  @IsOptional()
+  headers?: string;
+}
+
+export class WorkflowWebhookStepDto extends BaseWorkflowStepDto {
+  @ApiProperty({
+    description: "Action to perform, send a webhook to a URL",
+    example: WEBHOOK,
+  })
+  @IsString()
+  @IsIn(STEP_ACTIONS)
+  action: typeof WEBHOOK = WEBHOOK;
+
+  @ApiProperty({
+    description: "The webhook URL to send the request to",
+    example: "https://api.example.com/webhook",
+  })
+  @IsString()
+  webhookUrl!: string;
+
+  @ApiPropertyOptional({
+    description: "Whether to use Cal.com default payload instead of custom payload",
+    example: true,
+    default: true,
+  })
+  @IsBoolean()
+  @IsOptional()
+  useDefaultPayload: boolean = true;
+
+  @ApiPropertyOptional({
+    description: "Webhook message configuration",
+    type: WebhookMessageDto,
+  })
+  @ValidateNested()
+  @Type(() => WebhookMessageDto)
+  @IsOptional()
+  message?: WebhookMessageDto;
+
+  @ApiPropertyOptional({
+    description: "Secret for HMAC signature (X-Cal-Signature-256 header)",
+    example: "your-secret-key",
+  })
+  @IsString()
+  @IsOptional()
+  secret?: string;
+}
+
+export class UpdateWebhookWorkflowStepDto extends WorkflowWebhookStepDto {
   @ApiProperty({
     description:
       "Unique identifier of the step you want to update, if adding a new step do not provide this id",

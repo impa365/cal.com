@@ -19,13 +19,22 @@ export class DeploymentsService {
   ) {}
 
   async checkLicense() {
+    // ========================================
+    // CUSTOMIZAÇÃO: Licença sempre válida
+    // Para usar seu próprio endpoint de licença, descomente o código abaixo
+    // e configure GET_LICENSE_KEY_URL no ambiente
+    // ========================================
+    return true;
+
+    /*
+    // --- CÓDIGO ORIGINAL (verificação Cal.com) ---
     if (this.configService.get("e2e")) {
       return true;
     }
     let licenseKey = this.configService.get("api.licenseKey");
 
     if (!licenseKey) {
-      /** We try to check on DB only if env is undefined */
+      // We try to check on DB only if env is undefined
       const deployment = await this.deploymentsRepository.getDeployment();
       licenseKey = deployment?.licenseKey ?? undefined;
     }
@@ -43,5 +52,7 @@ export class DeploymentsService {
     const cacheKey = getLicenseCacheKey(licenseKey);
     this.redisService.redis.set(cacheKey, JSON.stringify(data), "EX", CACHING_TIME);
     return data.status;
+    // --- FIM CÓDIGO ORIGINAL ---
+    */
   }
 }

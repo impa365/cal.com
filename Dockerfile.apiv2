@@ -1,0 +1,47 @@
+# ============================================
+# Dockerfile para Cal.com API v2
+# Versão: 6.1.5-new
+# Baseado no Dockerfile oficial apps/api/v2/Dockerfile
+# ============================================
+
+FROM node:20-alpine AS build
+
+ARG DATABASE_DIRECT_URL
+ARG DATABASE_URL
+
+WORKDIR /calcom
+
+# Fix para OpenSSL no Alpine
+RUN set -eux; \
+    ln -sf /usr/lib/libssl.so.3 /lib/libssl.so.3 || true
+
+# Configurações do Node
+ENV NODE_ENV="production"
+ENV NODE_OPTIONS="--max-old-space-size=8192"
+ENV DATABASE_DIRECT_URL=${DATABASE_DIRECT_URL}
+ENV DATABASE_URL=${DATABASE_URL}
+ENV USE_POOL="true"
+
+# Copiar TODO o repositório (necessário para dependências cruzadas)
+COPY . .
+
+# Tornar scripts executáveis
+RUN chmod +x scripts/*.sh
+
+# Instalar dependências
+RUN yarn install
+
+# Gerar Prisma schemas
+RUN yarn workspace @calcom/api-v2 run generate-schemas
+
+# Build das dependências de plataforma
+RUN yarn workspace @calcom/api-v2 run build:docker
+
+# Build da API v2
+RUN yarn workspace @calcom/api-v2 run build
+
+# Expor porta
+EXPOSE 5555
+
+# Comando para iniciar (com migrações automáticas)
+CMD ["sh", "scripts/start-api.sh"]

@@ -30,6 +30,7 @@ import {
   StepAction,
   WHATSAPP_ATTENDEE,
   WHATSAPP_NUMBER,
+  WEBHOOK,
 } from "../inputs/workflow-step.input";
 import {
   ENUM_TO_TIME_UNIT,
@@ -132,6 +133,12 @@ const ACTION_CONFIG_MAP = {
   },
   [CAL_AI_PHONE_CALL]: {
     recipient: PHONE_NUMBER,
+    messageKey: "text",
+    setsCustomRecipient: true,
+    requiresPhone: false,
+  },
+  [WEBHOOK]: {
+    recipient: HOST,
     messageKey: "text",
     setsCustomRecipient: true,
     requiresPhone: false,
